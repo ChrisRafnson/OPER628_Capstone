@@ -12,14 +12,13 @@ class binary_heap:
 
     def insert_key(self, key) -> None:
         # print(f'\nInserting Key with value {key}...')
-        backup = self.data.copy()
         self.data.append(key)
         key_position = len(self.data) - 1
 
 
         if self.sift_up(key_position) == -1:
             # print("Error with sift-up procedure, restoring heap to former state...")
-            self.data = backup
+            return False
         else:
             # print("Key succesfully inserted!")
             pass
@@ -31,7 +30,6 @@ class binary_heap:
             pass
         else:
             # print(f'\nDeleting minimum valued key...')
-            backup = self.data.copy()
             deleted_key = self.data[0]
             self.data[0] = self.data[-1] #We replace the first value with the value at the very end of the array (index: -1)
             self.data.pop(-1) #Remove the very last index from the list, which is what we put at the root node
@@ -42,7 +40,6 @@ class binary_heap:
                 return deleted_key
             elif self.sift_down(0) == -1:
                 # print("Error with sift-down procedure, restoring heap to former state...")
-                self.data = backup
                 return False
             else:
                 # print(f"Minimum key successfully removed! Value of the key was {deleted_key}")
@@ -56,7 +53,6 @@ class binary_heap:
             pass
         else:
             # print(f'\nChanging value of key at position {position} to {new_value}...')
-            backup = self.data.copy()
             self.data[position] = new_value
 
             """
@@ -66,7 +62,7 @@ class binary_heap:
             """
             if self.sift_down(position) == -1:
                 # print("Error with sift-down procedure, restoring heap to former state...")
-                self.data = backup
+                return False
             else:
                 # print("Key successfully increased in value!")
                 pass
@@ -79,7 +75,6 @@ class binary_heap:
             pass
         else:
             # print(f'\nChanging value of key at position {position} to {new_value}...')
-            backup = self.data.copy()
             self.data[position] = new_value
 
             """
@@ -89,7 +84,7 @@ class binary_heap:
             """
             if self.sift_up(position) == -1:
                 # print("Error with sift-up procedure, restoring heap to former state...")
-                self.data = backup
+                return False
             else:
                 # print("Key successfully decreased in value")
                 pass
