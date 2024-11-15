@@ -1,0 +1,93 @@
+THINGS TO DO
+
+IMPLEMENT:
+
+Sorts:
+    Selection Sort
+    Merge Sort
+    Quick Sort
+    Bucket Sort
+    Heap Sort
+
+Graph Searches:
+    Naive Dijkstra
+    Heap Dijkstra
+    Naive Kruskal
+    Improved Kruskal
+    Naive Prims
+    Heap Prims
+
+SPEED OPTIMIZATION:
+
+Sorts:
+    Selection Sort
+    Merge Sort
+    Quick Sort
+    Bucket Sort
+    Heap Sort
+
+Graph Searches:
+    Naive Dijkstra
+    Heap Dijkstra
+    Naive Kruskal
+    Improved Kruskal
+    Naive Prims
+    Heap Prims
+
+MEMORY OPTIMIZATION:
+
+Sorts:
+    Selection Sort
+    Merge Sort
+    Quick Sort
+    Bucket Sort
+    Heap Sort
+
+Graph Searches:
+    Naive Dijkstra
+    Heap Dijkstra
+    Naive Kruskal
+    Improved Kruskal
+    Naive Prims
+    Heap Prims
+
+DATA GATHERING:
+
+Sorts: 
+
+    We will test on the following types of arrays:
+        random
+        almost sorted
+        almost reverse sorted
+
+    These should all be test with varying degrees of lengths
+
+    We will measure time (in seconds), operations (# of swaps and comparisons as an example),
+    and memory (in terms of a ratio between input size and the maximum memory used during the
+    runtime of the algorithm)
+
+    Selection Sort
+    Merge Sort
+    Quick Sort
+    Bucket Sort
+    Heap Sort
+
+Graph Searches:
+
+    The graphs should be of varying number of nodes and edges. 
+
+    We will measure speed and memory usage.
+
+    Naive Dijkstra
+    Heap Dijkstra
+    Naive Kruskal
+    Improved Kruskal
+    Naive Prims
+    Heap Prims
+
+REPORT
+
+PRESENTATION SLIDES
+
+
+
