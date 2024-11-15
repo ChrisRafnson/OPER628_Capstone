@@ -3,11 +3,7 @@ THINGS TO DO
 IMPLEMENT:
 
 Sorts:
-    Selection Sort
-    Merge Sort
-    Quick Sort
     Bucket Sort
-    Heap Sort
 
 Graph Searches:
     Naive Dijkstra
