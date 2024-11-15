@@ -5,57 +5,58 @@ import random
 import datastructs as ds
 import timeit
 
-"""
-Merge() is given three indices on the main array to construct two sub arrays which will be merged together
-"""
+# """
+# Merge() is given three indices on the main array to construct two sub arrays which will be merged together
+# """
 def merge(arr, left_bound, mid_point, right_bound):
-    left_array = []
-    right_array = []
+    # Create copies of the subarrays
+    left_array = arr[left_bound:mid_point + 1] 
+    right_array = arr[mid_point + 1:right_bound + 1]
+    
+    left_index = right_index = 0 #These are our pointers to the left and right arrays, we will not be actually removing elements from them since it is too slow and wastes time
+    merge_index = left_bound #This is where we will begin to insert elements from the left and right arrays
 
-    # This just puts our left and right arrays into separate arrays so we can merge them
-    for i in range(left_bound, mid_point+1):
-        left_array.append(arr[i])
-
-    for j in range(mid_point+1, right_bound+1):
-        right_array.append(arr[j])
-
-    # This is where the actual merging is done
-    for i in range(left_bound, right_bound+1):
-
-        if len(left_array) == 0  and len(right_array) == 0:
-            return
-        elif len(left_array) == 0:
-            arr[i] = right_array.pop(0)
-        elif len(right_array) == 0:
-            arr[i] = left_array.pop(0)
-        elif (left_array[0] <= right_array[0]):
-            arr[i] = left_array.pop(0)
+    # Merge the two arrays, in this case both left and right have elements in them.
+    while left_index < len(left_array) and right_index < len(right_array):
+        if left_array[left_index] <= right_array[right_index]:
+            arr[merge_index] = left_array[left_index]
+            left_index += 1 #iterate our left array index pointer, since we have "removed" an element from that array
         else:
-            arr[i] = right_array.pop(0)
+            arr[merge_index] = right_array[right_index]
+            right_index += 1 #iterate our right array index pointer, since we have "removed" an element from that array
+        merge_index += 1 #Move down the merge array
 
+    # If there are remaining elements in left_array, add them
+    while left_index < len(left_array):
+        arr[merge_index] = left_array[left_index]
+        left_index += 1 #iterate our left array index pointer, since we have "removed" an element from that array
+        merge_index += 1 #Move down the merge array
 
-"""
-We don't want merge sort to use copious amounts of memory so during the course of its run, it will use the orignal 
-array that was passed into it. merge() and merge_sort() will then require bounds so it knows which parts of the array that 
-it is working on
-"""
+    # If there are remaining elements in right_array, add them
+    while right_index < len(right_array):
+        arr[merge_index] = right_array[right_index]
+        right_index += 1 #iterate our right array index pointer, since we have "removed" an element from that array
+        merge_index += 1 #Move down the merge array
+
+# """
+# We don't want merge sort to use copious amounts of memory so during the course of its run, it will use the orignal 
+# array that was passed into it. merge() and merge_sort() will then require bounds so it knows which parts of the array that 
+# it is working on
+# """
 def merge_sort(arr, left_bound, right_bound):
-    
-    if right_bound < left_bound: #Our right should never be less than our left bound
-        return False
-    
-    elif left_bound < right_bound: #This condition implies that our list is greater than size 1, so we need to operate on it
-        mid_point = (left_bound + right_bound) // 2 #This is the mid point of our array
-        merge_sort(arr, left_bound, mid_point) #Recursively sort the left side
-        merge_sort(arr, mid_point + 1, right_bound) #Recursively sort the right side
-        merge(arr, left_bound, mid_point, right_bound) #Merge them together, by giving merge() the left, mid, and right bounds it can reconstruct the two sub arrays from the main array
-        return True
+    if left_bound < right_bound: #If left is bigger than right, we cannot sort the list properly
+        mid_point = (left_bound + right_bound) // 2 #We choose the floor to create a clean int input
+        merge_sort(arr, left_bound, mid_point) #Sort the left side
+        merge_sort(arr, mid_point + 1, right_bound) #Sort the right side
+        merge(arr, left_bound, mid_point, right_bound) #Merge the two sides together
 
-    else: #This means we have an array where the size is 1, i.e length 1. No sorting required.
-        return True
+    #Note that there is no return on this function, it sorts the given array in-place.
 
 
-
+"""
+Selection sort will also be sorted within the given array so as to conserve memory.
+This is a pretty simple sort but rather naive.
+"""
 def selection_sort(arr):
     size = len(arr)
 
@@ -71,13 +72,12 @@ def selection_sort(arr):
             j+=1
 
 
-        if smallest_index is not root_index:
+        if smallest_index != root_index:
             placeholder = arr[root_index]
             arr[root_index] = arr[smallest_index]
             arr[smallest_index] = placeholder
 
     return(arr)
-
 
 def heap_sort(arr):
 
@@ -96,66 +96,99 @@ def heap_sort(arr):
     #Now we iterate through the heap and remove the minimum values, placing them in the sorted
     #array until the heap is empty
 
-    while not my_heap.isEmpty():
+    while not my_heap.is_empty():
         sorted_arr.append(my_heap.delete_min())
 
 
     return(sorted_arr)
 
-def quick_sort(arr):
+def quick_sort(arr, low, high):
+    if low < high:
+        # Pivot selection using first, middle, and last elements
+        middle = (low + high) // 2
+        pivots = [arr[low], arr[middle], arr[high]]
+        pivots.sort()
+        pivot = pivots[1]  # Select the median as the pivot
 
-    if len(arr) <= 1:
-        return arr
+        # Array is sorted into higher and lower while still being in place
+        left, right = low, high
+        while left <= right:
+            while arr[left] < pivot:
+                left += 1
+            while arr[right] > pivot:
+                right -= 1
 
-    length = len(arr)
-    last_index = length -1
-    middle = length//2
-    
-    my_dict = {
-        0 : arr[0],
-        last_index : arr[last_index],
-        middle : arr[middle]
-    }
+            if left <= right:
+                arr[left], arr[right] = arr[right], arr[left]
+                left += 1
+                right -= 1
 
-    sorted_items = sorted(my_dict.items(), key=lambda item: item[1])
-    pivot = sorted_items[1][0]  # This extracts only the key with the median value
-
-    left_array = []
-    right_array = []
-
-    i = 0
-    while i < pivot:
-        if arr[i] < arr[pivot]:
-            left_array.append(arr[i])
-        else:
-            right_array.append(arr[i])
-
-        i+=1
-
-    i = pivot+1
-    while i < length:
-        if arr[i] < arr[pivot]:
-            left_array.append(arr[i])
-        else:
-            right_array.append(arr[i])
-
-        i+=1
-    
-    left = quick_sort(left_array)
-    middle = [arr[pivot]]
-    right = quick_sort(right_array)
-
-    return left+middle+right
+        # Recursive calls for left and right partitions
+        quick_sort(arr, low, right)
+        quick_sort(arr, left, high)
 
 def bucket_sort(arr):
-    pass
+    buckets = []
+
+    # Create buckets
+    for i in range(10):
+        buckets.append(ds.Doubly_Linked_List())
+
+    # Put elements into the correct buckets
+    for element in arr:
+        index = element // 10  # Determine bucket index
+        buckets[index].insert_end(element)
+
+    # Sort each bucket using insertion sort
+    for bucket in buckets:
+        for i in range(1, bucket.size):
+            key = bucket.find_position(i).my_value
+            j = i - 1
+
+            # Shift elements in the bucket that are greater than the key
+            while j >= 0 and bucket.find_position(j).my_value > key:
+                bucket.replace_value(position=j + 1, value=bucket.find_position(j).my_value)
+                j -= 1
+
+            # Insert the key at its correct position
+            bucket.replace_value(position=j + 1, value=key)
+
+    # Concatenate buckets into the sorted array
+    sorted_array = []
+    for bucket in buckets:
+        while not bucket.is_empty():
+            sorted_array.append(bucket.delete_first())
+
+    return sorted_array
+
 
 
 if __name__ == '__main__':
     
+    # array = [random.randint(0,99) for i in range(20)]
+    # print(bucket_sort(array))
 
-    array = [random.randint(0,99) for i in range(15)]
-    code_to_run = 'merge_sort(array, 0, len(array) - 1)'
+    array1 = [random.randint(-99,99) for i in range(10000)]
+    code_to_run_1 = "selection_sort(array1)"
 
-    time = timeit.timeit(code_to_run, globals= globals(), number=1000)
-    print(time)
+    array2 = [random.randint(0,99) for i in range(10000)]
+    code_to_run_2 = "bucket_sort(array2)"
+
+    array3 = [random.randint(-99,99) for i in range(10000)]
+    code_to_run_3 = "merge_sort(array3, 0, len(array3)-1)"
+
+    array4 = [random.randint(-99,99) for i in range(10000)]
+    code_to_run_4 = "quick_sort(array4, 0, len(array4)-1)"
+
+    time1 = timeit.timeit(code_to_run_1, globals=globals(), number=1)
+    time2 = timeit.timeit(code_to_run_2, globals=globals(), number=1)
+    time3 = timeit.timeit(code_to_run_3, globals=globals(), number=1)
+    time4 = timeit.timeit(code_to_run_4, globals=globals(), number=1)
+
+    print(time1)
+    print(time2)
+    print(time3)
+    print(time4)
+
+
+
