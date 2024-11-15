@@ -73,9 +73,7 @@ def selection_sort(arr):
 
 
         if smallest_index != root_index:
-            placeholder = arr[root_index]
-            arr[root_index] = arr[smallest_index]
-            arr[smallest_index] = placeholder
+            arr[root_index], arr[smallest_index] = arr[smallest_index], arr[root_index]
 
     return(arr)
 
@@ -165,30 +163,32 @@ def bucket_sort(arr):
 
 if __name__ == '__main__':
     
-    # array = [random.randint(0,99) for i in range(20)]
-    # print(bucket_sort(array))
+    array = [random.randint(0,99) for i in range(20)]
+    print(selection_sort(array))
 
-    array1 = [random.randint(-99,99) for i in range(10000)]
-    code_to_run_1 = "selection_sort(array1)"
 
-    array2 = [random.randint(0,99) for i in range(10000)]
-    code_to_run_2 = "bucket_sort(array2)"
 
-    array3 = [random.randint(-99,99) for i in range(10000)]
-    code_to_run_3 = "merge_sort(array3, 0, len(array3)-1)"
+    # array1 = [random.randint(-99,99) for i in range(10000)]
+    # code_to_run_1 = "selection_sort(array1)"
 
-    array4 = [random.randint(-99,99) for i in range(10000)]
-    code_to_run_4 = "quick_sort(array4, 0, len(array4)-1)"
+    # array2 = [random.randint(0,99) for i in range(10000)]
+    # code_to_run_2 = "bucket_sort(array2)"
 
-    time1 = timeit.timeit(code_to_run_1, globals=globals(), number=1)
-    time2 = timeit.timeit(code_to_run_2, globals=globals(), number=1)
-    time3 = timeit.timeit(code_to_run_3, globals=globals(), number=1)
-    time4 = timeit.timeit(code_to_run_4, globals=globals(), number=1)
+    # array3 = [random.randint(-99,99) for i in range(10000)]
+    # code_to_run_3 = "merge_sort(array3, 0, len(array3)-1)"
 
-    print(time1)
-    print(time2)
-    print(time3)
-    print(time4)
+    # array4 = [random.randint(-99,99) for i in range(10000)]
+    # code_to_run_4 = "quick_sort(array4, 0, len(array4)-1)"
+
+    # time1 = timeit.timeit(code_to_run_1, globals=globals(), number=1)
+    # time2 = timeit.timeit(code_to_run_2, globals=globals(), number=1)
+    # time3 = timeit.timeit(code_to_run_3, globals=globals(), number=1)
+    # time4 = timeit.timeit(code_to_run_4, globals=globals(), number=1)
+
+    # print(time1)
+    # print(time2)
+    # print(time3)
+    # print(time4)
 
 
 
