@@ -2,8 +2,7 @@ THINGS TO DO
 
 IMPLEMENT:
 
-Sorts:
-    Bucket Sort
+Sorts: Done
 
 Graph Searches:
     Naive Dijkstra
@@ -15,12 +14,8 @@ Graph Searches:
 
 SPEED OPTIMIZATION:
 
-Sorts:
-    Selection Sort
-    Merge Sort
-    Quick Sort
-    Bucket Sort
-    Heap Sort
+Sorts: Done
+
 
 Graph Searches:
     Naive Dijkstra
@@ -32,12 +27,7 @@ Graph Searches:
 
 MEMORY OPTIMIZATION:
 
-Sorts:
-    Selection Sort
-    Merge Sort
-    Quick Sort
-    Bucket Sort
-    Heap Sort
+Sorts: Done
 
 Graph Searches:
     Naive Dijkstra

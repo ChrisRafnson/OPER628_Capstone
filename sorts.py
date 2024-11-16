@@ -2,8 +2,8 @@
 
 import math
 import random
-import datastructs as ds
 import timeit
+from heapq import heapify, heappop
 
 # """
 # Merge() is given three indices on the main array to construct two sub arrays which will be merged together
@@ -69,24 +69,19 @@ def selection_sort(arr):
         while j < size:
             if arr[j] < arr[smallest_index]:
                 smallest_index = j
-            j+=1
+            j+=1 
 
 
         if smallest_index != root_index:
-            placeholder = arr[root_index]
-            arr[root_index] = arr[smallest_index]
-            arr[smallest_index] = placeholder
+            arr[root_index], arr[smallest_index] = arr[smallest_index], arr[root_index]
 
     return(arr)
 
 def heap_sort(arr):
 
-    #Create a heap object
-    my_heap = ds.binary_heap()
-
-    #Insert all array values into the heap, this will iteratively heapify the heap
-    for element in arr:
-        my_heap.insert_key(element)
+    size = len(arr)
+    #Create a heap object, we can do this by just heapifying the arr given
+    heapify(arr)
 
     #Now that the heap has been created and is a valid heap we create an array to store
     #the values as we remove them from the heap
@@ -96,19 +91,16 @@ def heap_sort(arr):
     #Now we iterate through the heap and remove the minimum values, placing them in the sorted
     #array until the heap is empty
 
-    while not my_heap.is_empty():
-        sorted_arr.append(my_heap.delete_min())
+    for i in range(size):
+        sorted_arr.append(heappop(arr))
 
-
-    return(sorted_arr)
+    return sorted_arr
 
 def quick_sort(arr, low, high):
     if low < high:
-        # Pivot selection using first, middle, and last elements
-        middle = (low + high) // 2
-        pivots = [arr[low], arr[middle], arr[high]]
-        pivots.sort()
-        pivot = pivots[1]  # Select the median as the pivot
+        #We're going to use a random pivot selection
+        pivot_index = random.randint(low, high)
+        pivot = arr[pivot_index]
 
         # Array is sorted into higher and lower while still being in place
         left, right = low, high
@@ -127,68 +119,68 @@ def quick_sort(arr, low, high):
         quick_sort(arr, low, right)
         quick_sort(arr, left, high)
 
-def bucket_sort(arr):
-    buckets = []
+def bucket_sort(arr, max, min):
 
-    # Create buckets
-    for i in range(10):
-        buckets.append(ds.Doubly_Linked_List())
+    length_array = len(arr) #This is also equal to the number of buckets we have
 
-    # Put elements into the correct buckets
-    for element in arr:
-        index = element // 10  # Determine bucket index
-        buckets[index].insert_end(element)
+    #If the list is empty of only size 1, then it is already sorted
+    if length_array == 0 or length_array == 1:
+        return arr
 
-    # Sort each bucket using insertion sort
-    for bucket in buckets:
-        for i in range(1, bucket.size):
-            key = bucket.find_position(i).my_value
-            j = i - 1
+    bucket_range = (max - min)/length_array
 
-            # Shift elements in the bucket that are greater than the key
-            while j >= 0 and bucket.find_position(j).my_value > key:
-                bucket.replace_value(position=j + 1, value=bucket.find_position(j).my_value)
-                j -= 1
+    #Create buckets
+    buckets = [[] for i in range(length_array)]
 
-            # Insert the key at its correct position
-            bucket.replace_value(position=j + 1, value=key)
+        # Distribute the elements into buckets
+    for num in arr:
+        bucket_index = length_array - int((num - min) / bucket_range) - 1
+        if bucket_index == length_array:  # Edge case for the max value
+            bucket_index -= 1
+        buckets[bucket_index].append(num)
 
-    # Concatenate buckets into the sorted array
+    # Sort each bucket and concatenate the results
     sorted_array = []
     for bucket in buckets:
-        while not bucket.is_empty():
-            sorted_array.append(bucket.delete_first())
+        sorted_array.extend(sorted(bucket))
 
     return sorted_array
 
 
+    
+
+
+
 
 if __name__ == '__main__':
+
+    min, max = 0, 1000
     
-    # array = [random.randint(0,99) for i in range(20)]
-    # print(bucket_sort(array))
+    array = [random.randint(min ,max) for i in range(2000000)]
+    # print(bucket_sort(array, min, max))
 
-    array1 = [random.randint(-99,99) for i in range(10000)]
-    code_to_run_1 = "selection_sort(array1)"
 
-    array2 = [random.randint(0,99) for i in range(10000)]
-    code_to_run_2 = "bucket_sort(array2)"
+    array1 = array.copy()
+    array2 = array.copy()
 
-    array3 = [random.randint(-99,99) for i in range(10000)]
-    code_to_run_3 = "merge_sort(array3, 0, len(array3)-1)"
+    code_to_run_1 = "quick_sort(array1, 0 , len(array1)-1)"
+    code_to_run_2 = "bucket_sort(array2, min, max)"
 
-    array4 = [random.randint(-99,99) for i in range(10000)]
-    code_to_run_4 = "quick_sort(array4, 0, len(array4)-1)"
+    # array3 = [random.randint(-99,99) for i in range(10000)]
+    # code_to_run_3 = "merge_sort(array3, 0, len(array3)-1)"
+
+    # array4 = [random.randint(-99,99) for i in range(10000)]
+    # code_to_run_4 = "quick_sort(array4, 0, len(array4)-1)"
 
     time1 = timeit.timeit(code_to_run_1, globals=globals(), number=1)
     time2 = timeit.timeit(code_to_run_2, globals=globals(), number=1)
-    time3 = timeit.timeit(code_to_run_3, globals=globals(), number=1)
-    time4 = timeit.timeit(code_to_run_4, globals=globals(), number=1)
+    # time3 = timeit.timeit(code_to_run_3, globals=globals(), number=1)
+    # time4 = timeit.timeit(code_to_run_4, globals=globals(), number=1)
 
     print(time1)
     print(time2)
-    print(time3)
-    print(time4)
+    # print(time3)
+    # print(time4)
 
 
 
