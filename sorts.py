@@ -1,56 +1,86 @@
 #@author 2d Lt Christopher Rafnson
 
-import math
 import random
 import timeit
 from heapq import heapify, heappop
 
+# def merge_sort(arr):
+#     temp = [0] * len(arr)
+#     _merge_sort(arr, temp, 0, len(arr) - 1)
+
+# def _merge_sort(arr, temp, left, right):
+#     if left < right:
+#         mid = (left + right) // 2
+#         _merge_sort(arr, temp, left, mid)
+#         _merge_sort(arr, temp, mid + 1, right)
+#         merge(arr, temp, left, mid, right)
+
+# def merge(arr, temp, left, mid, right):
+#     for i in range(left, right + 1):
+#         temp[i] = arr[i]
+    
+#     i, j, k = left, mid + 1, left
+#     while i <= mid and j <= right:
+#         if temp[i] <= temp[j]:
+#             arr[k] = temp[i]
+#             i += 1
+#         else:
+#             arr[k] = temp[j]
+#             j += 1
+#         k += 1
+    
+#     while i <= mid:
+#         arr[k] = temp[i]
+#         i += 1
+#         k += 1
+
 # """
 # Merge() is given three indices on the main array to construct two sub arrays which will be merged together
 # """
-def merge(arr, left_bound, mid_point, right_bound):
-    # Create copies of the subarrays
-    left_array = arr[left_bound:mid_point + 1] 
-    right_array = arr[mid_point + 1:right_bound + 1]
+def merge(arr, temp, left_bound, mid_point, right_bound):
+    for i in range(left_bound, right_bound + 1):
+        temp[i] = arr[i]
     
-    left_index = right_index = 0 #These are our pointers to the left and right arrays, we will not be actually removing elements from them since it is too slow and wastes time
+    #These are our pointers to the left and right arrays, we will not be actually removing elements from them since it is too slow and wastes time
+    left_index = left_bound
+    right_index = mid_point + 1
     merge_index = left_bound #This is where we will begin to insert elements from the left and right arrays
 
     # Merge the two arrays, in this case both left and right have elements in them.
-    while left_index < len(left_array) and right_index < len(right_array):
-        if left_array[left_index] <= right_array[right_index]:
-            arr[merge_index] = left_array[left_index]
+    while (left_index <= mid_point) and (right_index <= right_bound):
+        if temp[left_index] <= temp[right_index]:
+            arr[merge_index] = temp[left_index]
             left_index += 1 #iterate our left array index pointer, since we have "removed" an element from that array
         else:
-            arr[merge_index] = right_array[right_index]
+            arr[merge_index] = temp[right_index]
             right_index += 1 #iterate our right array index pointer, since we have "removed" an element from that array
         merge_index += 1 #Move down the merge array
 
     # If there are remaining elements in left_array, add them
-    while left_index < len(left_array):
-        arr[merge_index] = left_array[left_index]
+    while left_index <= mid_point:
+        arr[merge_index] = temp[left_index]
         left_index += 1 #iterate our left array index pointer, since we have "removed" an element from that array
         merge_index += 1 #Move down the merge array
 
-    # If there are remaining elements in right_array, add them
-    while right_index < len(right_array):
-        arr[merge_index] = right_array[right_index]
-        right_index += 1 #iterate our right array index pointer, since we have "removed" an element from that array
-        merge_index += 1 #Move down the merge array
 
 # """
 # We don't want merge sort to use copious amounts of memory so during the course of its run, it will use the orignal 
 # array that was passed into it. merge() and merge_sort() will then require bounds so it knows which parts of the array that 
 # it is working on
 # """
-def merge_sort(arr, left_bound, right_bound):
+def _merge_sort(arr, temp, left_bound, right_bound):
+
     if left_bound < right_bound: #If left is bigger than right, we cannot sort the list properly
         mid_point = (left_bound + right_bound) // 2 #We choose the floor to create a clean int input
-        merge_sort(arr, left_bound, mid_point) #Sort the left side
-        merge_sort(arr, mid_point + 1, right_bound) #Sort the right side
-        merge(arr, left_bound, mid_point, right_bound) #Merge the two sides together
+        _merge_sort(arr, temp, left_bound, mid_point) #Sort the left side
+        _merge_sort(arr, temp, mid_point + 1, right_bound) #Sort the right side
+        merge(arr, temp, left_bound, mid_point, right_bound) #Merge the two sides together
 
     #Note that there is no return on this function, it sorts the given array in-place.
+
+def merge_sort(arr):
+    temp = [0] * len(arr)
+    _merge_sort(arr, temp, 0, len(arr)-1)
 
 
 """
@@ -77,6 +107,18 @@ def selection_sort(arr):
 
     return(arr)
 
+def selection_sort(arr):
+    size = len(arr)
+    for i in range(size):
+        smallest_index = i  # Assume the current position is the smallest
+        for j in range(i + 1, size):  # Search for the smallest in the remaining array
+            if arr[j] < arr[smallest_index]:
+                smallest_index = j
+        # Swap only if needed
+        if smallest_index != i:
+            arr[i], arr[smallest_index] = arr[smallest_index], arr[i]
+    return arr
+
 def heap_sort(arr):
 
     size = len(arr)
@@ -96,28 +138,30 @@ def heap_sort(arr):
 
     return sorted_arr
 
-def quick_sort(arr, low, high):
-    if low < high:
-        #We're going to use a random pivot selection
-        pivot_index = random.randint(low, high)
-        pivot = arr[pivot_index]
+def quick_sort(arr):
+    # Base case: arrays of length 0 or 1 are already sorted
+    if len(arr) <= 1:
+        return arr
 
-        # Array is sorted into higher and lower while still being in place
-        left, right = low, high
-        while left <= right:
-            while arr[left] < pivot:
-                left += 1
-            while arr[right] > pivot:
-                right -= 1
+    # Random pivot selection
+    pivots = (arr[0], arr[len(arr)//2], arr[-1])
+    pivot = sorted(pivots)[1]
 
-            if left <= right:
-                arr[left], arr[right] = arr[right], arr[left]
-                left += 1
-                right -= 1
+    # Three-way partitioning
+    left = []
+    middle = []
+    right = []
 
-        # Recursive calls for left and right partitions
-        quick_sort(arr, low, right)
-        quick_sort(arr, left, high)
+    for value in arr:
+        if value < pivot:
+            left.append(value)
+        elif value > pivot:
+            right.append(value)
+        else:
+            middle.append(value)
+
+    # Recursively sort left and right partitions, and concatenate
+    return quick_sort(left) + middle + quick_sort(right)
 
 def bucket_sort(arr, max, min):
 
@@ -142,43 +186,39 @@ def bucket_sort(arr, max, min):
     # Sort each bucket and concatenate the results
     sorted_array = []
     for bucket in buckets:
-        sorted_array.extend(sorted(bucket))
+        sorted_array.extend(quick_sort(bucket))
 
     return sorted_array
-
-
-    
-
-
-
 
 if __name__ == '__main__':
 
     min, max = 0, 1000
+    random.seed(2024)
     
-    array = [random.randint(min ,max) for i in range(2000000)]
-    # print(bucket_sort(array, min, max))
+    array = [random.randint(min,max) for i in range(1000)]
+    # print(selection_sort(array))
+
 
 
     array1 = array.copy()
-    array2 = array.copy()
+    # # array2 = array.copy()
 
-    code_to_run_1 = "quick_sort(array1, 0 , len(array1)-1)"
-    code_to_run_2 = "bucket_sort(array2, min, max)"
+    code_to_run_1 = "selection_sort(array1)"
+    # # code_to_run_2 = "bucket_sort(array2, min, max)"
 
-    # array3 = [random.randint(-99,99) for i in range(10000)]
-    # code_to_run_3 = "merge_sort(array3, 0, len(array3)-1)"
+    # # array3 = [random.randint(-99,99) for i in range(10000)]
+    # # code_to_run_3 = "merge_sort(array3, 0, len(array3)-1)"
 
-    # array4 = [random.randint(-99,99) for i in range(10000)]
-    # code_to_run_4 = "quick_sort(array4, 0, len(array4)-1)"
+    # # array4 = [random.randint(-99,99) for i in range(10000)]
+    # # code_to_run_4 = "quick_sort(array4, 0, len(array4)-1)"
 
     time1 = timeit.timeit(code_to_run_1, globals=globals(), number=1)
-    time2 = timeit.timeit(code_to_run_2, globals=globals(), number=1)
+    # time2 = timeit.timeit(code_to_run_2, globals=globals(), number=1)
     # time3 = timeit.timeit(code_to_run_3, globals=globals(), number=1)
     # time4 = timeit.timeit(code_to_run_4, globals=globals(), number=1)
 
     print(time1)
-    print(time2)
+    # print(time2)
     # print(time3)
     # print(time4)
 

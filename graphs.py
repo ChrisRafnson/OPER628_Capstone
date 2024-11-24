@@ -3,7 +3,9 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random
 import timeit
-import heapq
+from heapq import heappush, heappop, heapify
+
+random.seed(2024)
 
 
 def Naive_Dijkstras(network, nodes, source, destination):
@@ -16,7 +18,7 @@ def Naive_Dijkstras(network, nodes, source, destination):
     #Initializing our distance and predecessor labels
     for n in nodes: 
         distance[n] = 999_999_999
-        predecessors[n] = -1
+        predecessors[n] = 0
 
     distance[source] = 0 #Source is where we are starting, i.e cost = 0. Also guarantees that we look at this node first
     predecessors[source] = 0
@@ -44,81 +46,81 @@ def Naive_Dijkstras(network, nodes, source, destination):
     return path, distance[destination]
 
 def Heap_Dijkstras(network, nodes, source, destination):
-    num_nodes = len(nodes)
-    S = set() #Permanent Nodes
-    S_c = set(nodes) #Temporary Nodes
-    distance = BinaryHeap() #Distances to each node
-    predecessors = dict() #The predecessor for each node in our path
+    S = set()  # Permanent Nodes
+    S_c = set(nodes)  # Temporary Nodes
+    min_heap = []  # Priority queue for distances
+    predecessors = dict()  # The predecessor for each node in our path
+    distances = {n: float('inf') for n in nodes}  # Best-known distances
 
-    #Initializing our distance and predecessor labels
-    for n in nodes: 
-        distance.Insert_Key(999_999_999, n)
-        predecessors[n] = -1
+    # Initialize distance for source node
+    distances[source] = 0
+    heappush(min_heap, (0, source))
+    predecessors[source] = None
 
-    distance.Decrease_Key(source, 0) #Source is where we are starting, i.e cost = 0. Also guarantees that we look at this node first
-    predecessors[source] = 0
+    # Main loop of Dijkstra's algorithm
+    while min_heap:
+        distance_current_node, current_node = heappop(min_heap)
 
-    #lets calculate some distances, this is the main loop of Dijkstras
-    while len(S) < num_nodes:
-        current_node, distance_current_node = distance.Find_Min_Node() #This grabs the node with the smallest distance
+        # Skip processing if the node is already in the permanent set
+        if current_node in S:
+            continue
+
         S.add(current_node)
         S_c.discard(current_node)
 
-        for adjacent_node in network[current_node]:
+        for adjacent_node, weight in network[current_node].items():
+            # Skip nodes in the permanent set
+            if adjacent_node in S:
+                continue
 
-            #We don't touch the distance labels of nodes in the permanent set
-            if adjacent_node not in S:
-                distance_adjacent_node = distance.heap[distance.node_locations[adjacent_node]]
+            new_distance = distance_current_node + weight
 
-                if distance_adjacent_node > distance_current_node + network[current_node][adjacent_node]:
-                    distance.Decrease_Key(adjacent_node, distance_current_node + network[current_node][adjacent_node])
-                    predecessors[adjacent_node] = current_node
-            else:
-                pass
+            # Update the distance and predecessor if a shorter path is found
+            if new_distance < distances[adjacent_node]:
+                distances[adjacent_node] = new_distance
+                heappush(min_heap, (new_distance, adjacent_node))
+                predecessors[adjacent_node] = current_node
 
-    #This just recpnstructs the path into a neater form
+    # Reconstruct the path
     path = deque()
-    cost = 0
+    cost = distances[destination]
     current_node = destination
-    path.append(current_node)
-    while current_node != source:
-        current_node = predecessors.pop(current_node)
-        cost = cost + network[current_node][path[0]]
-        path.appendleft(current_node)
+    if cost < float('inf'):  # Check if the destination is reachable
+        while current_node is not None:
+            path.appendleft(current_node)
+            current_node = predecessors[current_node]
+    else:
+        return None, float('inf')  # Destination is not reachable
 
-    return path, cost
+    return list(path), cost
 
 def Naive_Kruskals(nodes, edges, dist):
-
-    #Initialize vars
+    # Initialize vars
     mst = set()
     total_cost = 0
     edges = list(edges)
 
-    #Sort our edges by weight
-    edges.sort(key = lambda edge: dist[edge])
+    # Sort edges by weight
+    edges.sort(key=lambda edge: dist[edge])
 
-    #generate our linked lists
-    components = {node: Doubly_Linked_List() for node in nodes}
-    for node in nodes:
-        components[node].insert_end(node)
-        components[node].size = 1
+    # Generate initial sets for each node
+    components = {node: {node} for node in nodes}
 
     for i, j in edges:
-        weight = dist[(i,j)]
+        weight = dist[(i, j)]
 
-        if type(components[i].find_value(j)) == bool:
-            mst.add((i, j)) #Add edge to MST
-            total_cost = total_cost + weight #Update total cost
+        # Check if i and j are in the same component
+        if components[i] != components[j]:
+            # Add edge to MST
+            mst.add((i, j))
+            total_cost += weight
 
-            components[i].merge(components[j]) #Merge the lists together
-
-            #Update list references for every item in the list containing now i and j
-
-            current = components[i].head
-            while current:
-                components[current.key] = components[i]
-                current = current.right_pointer
+            # Merge the two components
+            new_component = components[i].union(components[j])
+            
+            # Update references for all nodes in the new component
+            for node in new_component:
+                components[node] = new_component
 
     return mst, total_cost
 
@@ -156,6 +158,47 @@ def Improved_Kruskals(nodes, edges, dist):
 
     return mst, total_cost
 
+# def Heap_Prims(network, nodes, source):
+#     # Initialize the MST path and total cost
+#     mst_path = set()
+#     total_cost = 0
+
+#     # Set to track nodes already in the MST
+#     in_mst = set()
+#     in_mst.add(source)
+
+#     # Min-Heap to keep track of edges (weight, from_node, to_node)
+#     heap = BinaryHeap()
+
+#     # Add all edges from the start node to the heap
+#     for adjacent, weight in network[source].items():
+#         heap.Insert_Key(weight, (source, adjacent))
+
+#     # Main loop to construct the MST
+#     while len(in_mst) < len(nodes):
+
+#         # Extract the edge with the minimum weight
+#         (from_node, to_node), min_weight  = heap.Find_Min_Node()
+
+#         # If the to_node is already in the MST, skip it
+#         if to_node in in_mst:
+#             continue
+        
+#         else:
+#             # Otherwise, add this edge to the MST
+#             in_mst.add(to_node)
+#             total_cost = total_cost + min_weight
+#             mst_path.add((from_node, to_node))
+
+#             # Add all new edges from the newly added node to the heap
+#             for adjacent, weight in network[to_node].items():
+#                 if adjacent not in in_mst:
+#                     heap.Insert_Key(weight, (to_node, adjacent))
+
+        
+
+#     return mst_path, total_cost
+
 def Heap_Prims(network, nodes, source):
     # Initialize the MST path and total cost
     mst_path = set()
@@ -166,58 +209,17 @@ def Heap_Prims(network, nodes, source):
     in_mst.add(source)
 
     # Min-Heap to keep track of edges (weight, from_node, to_node)
-    heap = BinaryHeap()
-
-    # Add all edges from the start node to the heap
-    for adjacent, weight in network[source].items():
-        heap.Insert_Key(weight, (source, adjacent))
-
-    # Main loop to construct the MST
-    while len(in_mst) < len(nodes):
-
-        # Extract the edge with the minimum weight
-        (from_node, to_node), min_weight  = heap.Find_Min_Node()
-
-        # If the to_node is already in the MST, skip it
-        if to_node in in_mst:
-            continue
-        
-        else:
-            # Otherwise, add this edge to the MST
-            in_mst.add(to_node)
-            total_cost = total_cost + min_weight
-            mst_path.add((from_node, to_node))
-
-            # Add all new edges from the newly added node to the heap
-            for adjacent, weight in network[to_node].items():
-                if adjacent not in in_mst:
-                    heap.Insert_Key(weight, (to_node, adjacent))
-
-        
-
-    return mst_path, total_cost
-
-def Heap_Prims_Improved(network, nodes, source):
-    # Initialize the MST path and total cost
-    mst_path = set()
-    total_cost = 0
-
-    # Set to track nodes already in the MST
-    in_mst = set()
-    in_mst.add(source)
-
-    # Min-Heap to keep track of edges (weight, from_node, to_node)
     heap = []
-    heapq.heapify(heap)
+    heapify(heap)
 
     # Add all edges from the start node to the heap
     for adjacent, weight in network[source].items():
-        heapq.heappush(heap, (weight, source, adjacent))
+        heappush(heap, (weight, source, adjacent))
 
     # Main loop to construct the MST
     while len(in_mst) < len(nodes):
         # Extract the edge with the minimum weight
-        min_weight, from_node, to_node = heapq.heappop(heap)
+        min_weight, from_node, to_node = heappop(heap)
 
         # If the to_node is already in the MST, skip it
         if to_node in in_mst:
@@ -231,7 +233,7 @@ def Heap_Prims_Improved(network, nodes, source):
         # Add all new edges from the newly added node to the heap
         for adjacent, weight in network[to_node].items():
             if adjacent not in in_mst:
-                heapq.heappush(heap, (weight, to_node, adjacent))
+                heappush(heap, (weight, to_node, adjacent))
 
     return mst_path, total_cost
 
@@ -801,28 +803,6 @@ def create_directed_weighted_network(E, dist):
     return network  # Return the undirected, weighted network dictionary
 
 #**************************************************************************
-def generate_graph(num_nodes, density, max_weight):
-    # Ensure the density is between 0 and 1
-    if density < 0:
-        density = 0
-    elif density > 1:
-        density = 1
-
-    # Define nodes
-    nodes = set(range(1, num_nodes + 1))
-
-    # Generate all possible edges
-    all_possible_edges = [(i, j) for i in nodes for j in nodes if i < j]
-    num_edges = int(len(all_possible_edges) * density)
-
-    # Randomly select a subset of edges
-    edges = set(random.sample(all_possible_edges, num_edges))
-
-    # Assign random distances to each edge
-    distance = {edge: random.randint(1, max_weight) for edge in edges}
-
-    return nodes, edges, distance
-
 def generate_connected_graph(num_nodes, density, max_weight):
     # Ensure the density is between 0 and 1
     if density < 0:
@@ -842,11 +822,20 @@ def generate_connected_graph(num_nodes, density, max_weight):
     for i in range(num_nodes - 1):
         edges.add((available_nodes[i], available_nodes[i + 1]))
 
+    # Ensure at least one edge goes to and from each node
+    for i in range(num_nodes):
+        if i == num_nodes - 1:  # Last node connects back to the first
+            edges.add((available_nodes[i], available_nodes[0]))
+        else:
+            edges.add((available_nodes[i + 1], available_nodes[i]))
+
     # Assign random distances to each edge in the spanning tree
     distance = {edge: random.randint(1, max_weight) for edge in edges}
 
     # Step 2: Generate all possible remaining edges that are not in the spanning tree
-    all_possible_edges = [(i, j) for i in nodes for j in nodes if i < j and (i, j) not in edges]
+    all_possible_edges = [
+        (i, j) for i in nodes for j in nodes if i != j and (i, j) not in edges
+    ]
     num_additional_edges = int(len(all_possible_edges) * density)
 
     # Randomly select additional edges to meet the density requirement
@@ -857,6 +846,41 @@ def generate_connected_graph(num_nodes, density, max_weight):
     distance.update({edge: random.randint(1, max_weight) for edge in additional_edges})
 
     return nodes, edges, distance
+
+# def generate_connected_graph(num_nodes, density, max_weight):
+#     # Ensure the density is between 0 and 1
+#     if density < 0:
+#         density = 0
+#     elif density > 1:
+#         density = 1
+
+#     # Define nodes
+#     nodes = set(range(1, num_nodes + 1))
+
+#     # Step 1: Create a spanning tree to ensure all nodes are connected
+#     edges = set()
+#     available_nodes = list(nodes)
+#     random.shuffle(available_nodes)
+
+#     # Connect all nodes in a chain to form a spanning tree
+#     for i in range(num_nodes - 1):
+#         edges.add((available_nodes[i], available_nodes[i + 1]))
+
+#     # Assign random distances to each edge in the spanning tree
+#     distance = {edge: random.randint(1, max_weight) for edge in edges}
+
+#     # Step 2: Generate all possible remaining edges that are not in the spanning tree
+#     all_possible_edges = [(i, j) for i in nodes for j in nodes if i < j and (i, j) not in edges]
+#     num_additional_edges = int(len(all_possible_edges) * density)
+
+#     # Randomly select additional edges to meet the density requirement
+#     additional_edges = set(random.sample(all_possible_edges, num_additional_edges))
+#     edges.update(additional_edges)
+
+#     # Assign random distances to each additional edge
+#     distance.update({edge: random.randint(1, max_weight) for edge in additional_edges})
+
+#     return nodes, edges, distance
 
 
 
@@ -909,53 +933,54 @@ distance_4 = {(1,2):6, (1,3):4, (2,3):2, (2, 4):2, (3, 4):1, (3, 5):2, (4, 6):7,
 
 if __name__ == "__main__":
 
-    num_nodes = 10000
-    nodes, edges, weights = generate_connected_graph(num_nodes, .9, 100)
 
-    undirected_weighted = create_undirected_weighted_network(edges, weights)
-    directed_weighted = create_directed_weighted_network(edges, weights)
+    # num_nodes = 1000
+    # nodes, edges, weights = generate_connected_graph(num_nodes, 1, 100)
 
-    code_to_run_1 = "Naive_Dijkstras(directed_weighted, nodes, 1, 1000)"
-    code_to_run_2 = "Heap_Dijkstras(directed_weighted, nodes, 1, 1000)"
-    code_to_run_3 = "Naive_Kruskals(nodes, edges, weights)"
-    code_to_run_4 = "Improved_Kruskals(nodes, edges, weights)"
-    code_to_run_5 = "Naive_Prims(undirected_weighted, nodes, 2)"
-    code_to_run_6 = "Heap_Prims_Improved(undirected_weighted, nodes, 2)"
+    # undirected_weighted = create_undirected_weighted_network(edges, weights)
+    # directed_weighted = create_directed_weighted_network(edges, weights)
+
+    # code_to_run_1 = "Heap_Dijkstras_with_heapq(directed_weighted, nodes, 1, 1000)"
+    # code_to_run_2 = "Heap_Dijkstras(directed_weighted, nodes, 1, 1000)"
+    # # code_to_run_3 = "Naive_Kruskals(nodes, edges, weights)"
+    # # code_to_run_4 = "Improved_Kruskals(nodes, edges, weights)"
+    # # code_to_run_5 = "Naive_Prims(undirected_weighted, nodes, 2)"
+    # # code_to_run_6 = "Heap_Prims_Improved(undirected_weighted, nodes, 2)"
     
 
-    time1 = timeit.timeit(code_to_run_1, globals=globals(), number=1)
-    time2 = timeit.timeit(code_to_run_2, globals=globals(), number=1)
-    time3 = timeit.timeit(code_to_run_3, globals=globals(), number=1)
-    time4 = timeit.timeit(code_to_run_4, globals=globals(), number=1)
-    time5 = timeit.timeit(code_to_run_5, globals=globals(), number=1)
-    time6 = timeit.timeit(code_to_run_6, globals=globals(), number=1)
+    # time1 = timeit.timeit(code_to_run_1, globals=globals(), number=1)
+    # time2 = timeit.timeit(code_to_run_2, globals=globals(), number=1)
+    # # time3 = timeit.timeit(code_to_run_3, globals=globals(), number=1)
+    # # time4 = timeit.timeit(code_to_run_4, globals=globals(), number=1)
+    # # time5 = timeit.timeit(code_to_run_5, globals=globals(), number=1)
+    # # time6 = timeit.timeit(code_to_run_6, globals=globals(), number=1)
     
-    print(time1)
-    print(time2)
-    print(time3)
-    print(time4)
-    print(time5)
-    print(time6)
+    # print(time1)
+    # print(time2)
+    # # print(time3)
+    # # print(time4)
+    # # print(time5)
+    # # print(time6)
 
-    # Example usage
+    # # Example usage
     
-    # # Create a graph
-    # G = nx.DiGraph()
+    # # # Create a graph
+    # # G = nx.DiGraph()
 
-    # # Add nodes
-    # G.add_nodes_from(nodes)
+    # # # Add nodes
+    # # G.add_nodes_from(nodes)
 
-    # for edge, weight in distance.items():
-    #     G.add_edge(edge[0], edge[1], weight=weight)
+    # # for edge, weight in distance.items():
+    # #     G.add_edge(edge[0], edge[1], weight=weight)
 
-    # # Draw the graph with labels and edge weights
-    # pos = nx.spring_layout(G)  # Layout for the nodes
-    # nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=500, font_size=10)
+    # # # Draw the graph with labels and edge weights
+    # # pos = nx.spring_layout(G)  # Layout for the nodes
+    # # nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=500, font_size=10)
 
-    # # Draw edge labels (weights)
-    # edge_labels = nx.get_edge_attributes(G, 'weight')
-    # nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+    # # # Draw edge labels (weights)
+    # # edge_labels = nx.get_edge_attributes(G, 'weight')
+    # # nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
 
-    # plt.show()
+    # # plt.show()
 
     print("Done")
