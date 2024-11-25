@@ -4,6 +4,7 @@ import numpy as np
 
 
 sorts = ["heap_sort", "merge_sort", "bucket_sort", "selection_sort", "quick_sort"]
+data_types = ["uniform", "almost_reverse_sorted", "almost_sorted", "random"]
 
 
 
@@ -48,7 +49,7 @@ def generate_single_plot_runtime(sort, df_random, df_almost, df_reverse, df_unif
     plt.legend()
     plt.grid(True)
     # plt.show()
-    # plt.savefig(f"plots\sort_algorithms\{sort}\{sort}_single_plot_runtime")
+    plt.savefig(f"plots\sort_algorithms\{sort}\{sort}_single_plot_runtime")
 
 def generate_times_vs_theoretical(sort, df):
     df = calculate_runtime_mean(df)
@@ -57,16 +58,20 @@ def generate_times_vs_theoretical(sort, df):
 
     theoretical_df['List Size'] = [i for i in range(0, df["List Size"].iloc[-1] + 5, 5)]
 
+    
     # Compute theoretical times and add as a new column
-    linearithmic_normalizer = df["Time Taken (s)"].iloc[1] / (df["List Size"].iloc[1] * np.log2(df["List Size"].iloc[1]))
+    linearithmic_normalizer = df["Time Taken (s)"].iloc[(len(df)//2)] / (df["List Size"].iloc[(len(df)//2)] * np.log2(df["List Size"].iloc[(len(df)//2)]))
     theoretical_df["Linearithmic Time (s)"] = linearithmic_normalizer * theoretical_df['List Size'] * np.log2(theoretical_df['List Size'])
 
     # Compute theoretical times and add as a new column
-    linear_normalizer = df["Time Taken (s)"].iloc[1] / (df["List Size"].iloc[1])
+    linear_normalizer = df["Time Taken (s)"].iloc[(len(df)//2)] / (df["List Size"].iloc[(len(df)//2)])
     theoretical_df["Linear Time (s)"] = linear_normalizer * theoretical_df['List Size']
 
+    average_case_normalizer = df["Time Taken (s)"].iloc[(len(df) // 2)] / (2 * df["List Size"].iloc[(len(df) // 2)])
+    theoretical_df["Average Case Time (s)"] = average_case_normalizer * (2 * theoretical_df["List Size"])
+
     # Compute theoretical times and add as a new column
-    poloynomial_normalizer = df["Time Taken (s)"].iloc[1] / (df["List Size"].iloc[1] ** 2)
+    poloynomial_normalizer = df["Time Taken (s)"].iloc[(len(df)//2)] / (df["List Size"].iloc[(len(df)//2)] ** 2)
     theoretical_df["Polynomial Time (s)"] = poloynomial_normalizer * (theoretical_df["List Size"] ** 2)
 
     # Plot using pandas
@@ -77,7 +82,7 @@ def generate_times_vs_theoretical(sort, df):
     plt.plot(theoretical_df["List Size"], theoretical_df["Linear Time (s)"], '-', label=r"Theoretical $O(n)$", color = 'y')
     plt.plot(theoretical_df["List Size"], theoretical_df["Polynomial Time (s)"], '-', label=r"Theoretical $O(n^2)$", color = 'r')
 
-
+        
     if sort == 'heap_sort':
         plt.title("Heap Sort Performance: Measured vs Theoretical")
     elif sort == 'bucket_sort':
@@ -92,15 +97,11 @@ def generate_times_vs_theoretical(sort, df):
 
     plt.xlabel("List Size")
     plt.ylabel("Time (seconds)")
-    plt.xscale('log')
-    
     plt.ylim(0, df["Time Taken (s)"].iloc[-1] * 1.25)
     plt.legend()
     plt.grid(True)
     plt.show()
-
     # plt.savefig(f"plots\sort_algorithms\{sort}\{sort}_theoretical_runtime")
-
 
 def generate_single_plot_memory(sort, df_random, df_almost, df_reverse, df_uniform):
 
@@ -126,19 +127,66 @@ def generate_single_plot_memory(sort, df_random, df_almost, df_reverse, df_unifo
     plt.legend()
     plt.grid(True)
     # plt.show()
-    # plt.savefig(f"plots\sort_algorithms\{sort}\{sort}_sinlge_plot_memory")
+    plt.savefig(f"plots\sort_algorithms\{sort}\{sort}_single_plot_memory")
+
+def generate_sort_comparison(sorts, data_type):
+    
+    line_styles = [('o', '-', 'k'), ('o', '-', 'b'), ('o', '-', 'r'), ('o', '-', 'y'), ('o', '-', 'c')]
+
+    plt.figure()
+    max_y_val = 0
+    for sort, line_style in zip(sorts, line_styles):
+
+        if sort == 'heap_sort':
+            legend = "Heap Sort"
+        elif sort == 'bucket_sort':
+            legend = "Bucket Sort"
+        elif sort == 'quick_sort':
+            legend = "Quick Sort"
+        elif sort == 'merge_sort':
+            legend = "Merge Sort"
+        else:
+            legend = "Selection Sort"
+
+        df = pd.read_csv(f"sort_data\{sort}_generate_{data_type}_list.csv")
+        grouped = df.groupby('List Size')['Time Taken (s)'].mean()
+
+        # if grouped.iloc[-1] > max_y_val:
+        #     max_y_val = grouped.iloc[-1]
+
+        if sort == 'merge_sort':
+            max_y_val = grouped.iloc[-1]
+
+        plt.plot(grouped, label=legend, marker = line_style[0], linestyle = line_style[1], color = line_style[2])
+
+    plt.xlabel('Input Size (n)')
+    plt.ylabel('Time to Finish Sort (s)')
+    plt.title(f"Comparison of Sorting Algorithms ({data_type})")
+    plt.ylim(0, max_y_val)
+    plt.legend()
+    plt.grid(True)
+    # plt.show()
+
+    plt.savefig(f"plots\sort_algorithms\comparison_{data_type}")
 
 
 
 
 if __name__ == '__main__':
 
-    # sort= "heap_sort"
-    for sort in sorts:
-        a, b, c, d = read_runtime_data(sort)
-        generate_single_plot_runtime(sort, a, b, c, d)
-        generate_single_plot_memory(sort, a, b, c, d)
-        generate_times_vs_theoretical(sort, a)
+    # for data in data_types:
+    #     generate_sort_comparison(sorts, data)
+
+
+    # for sort in sorts:
+    #     a, b, c, d = read_runtime_data(sort)
+    #     generate_single_plot_runtime(sort, a, b, c, d)
+    #     generate_single_plot_memory(sort, a, b, c, d)
+    #     generate_times_vs_theoretical(sort, a)
+
+    sort = "bucket_sort"
+    a, b, c, d = read_runtime_data(sort)
+    generate_times_vs_theoretical(sort, a)
 
 
     print("Done")

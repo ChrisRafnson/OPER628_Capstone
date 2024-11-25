@@ -210,7 +210,6 @@ def Heap_Prims(network, nodes, source):
 
     # Min-Heap to keep track of edges (weight, from_node, to_node)
     heap = []
-    heapify(heap)
 
     # Add all edges from the start node to the heap
     for adjacent, weight in network[source].items():
