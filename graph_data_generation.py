@@ -14,6 +14,15 @@ from graphs import (
     create_undirected_weighted_network,
 )
 
+algorithms = [
+    # Naive_Dijkstras,
+    # Heap_Dijkstras,
+    Naive_Kruskals,
+    Improved_Kruskals,
+    Naive_Prims,
+    Heap_Prims
+]
+
 def measure_time_and_memory(func, *args):
     """Measures time and memory usage of a graph algorithm."""
     tracemalloc.start()
@@ -62,12 +71,15 @@ def generate_data_for_algorithm(algorithm, filename_prefix, input_sizes, densiti
 
 if __name__ == "__main__":
     # User-specified parameters
-    input_sizes = [10,20,30,40,50,60,70,80,90,100,200,300,400,500,600,700,800,900,1000,2000, 3000, 4000, 5000]
-    densities = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    input_sizes = [10, 50, 100, 250, 500, 750, 1000]
+
+    densities = [0.25, 0.5, 0.75, 1.0]
     seed = 2024  # Ensure reproducibility
     
     # Replace with the desired algorithm to test
     algorithm = Naive_Prims  # Example: change this to test other algorithms
 
-    filename_prefix = f"data/{algorithm.__name__.lower()}"
-    generate_data_for_algorithm(algorithm, filename_prefix, input_sizes, densities, seed)
+
+    for algorithm in algorithms:
+        filename_prefix = f"data/{algorithm.__name__.lower()}"
+        generate_data_for_algorithm(algorithm, filename_prefix, input_sizes, densities, seed)

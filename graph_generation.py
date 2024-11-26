@@ -23,6 +23,29 @@ def generate_undirected_graph(size, density):
 
     return adj_matrix
 
+def generate_directed_graph(size, density):
+    # Ensure we generate a strongly connected directed graph
+    done = False
+
+    while not done:
+        # Generate a random directed graph
+        G = nx.gnp_random_graph(size, density, directed=True)
+
+        # Check if the graph is strongly connected
+        if nx.is_strongly_connected(G):
+            done = True
+        else:
+            pass
+
+    # Assign random weights to the edges
+    for u, v in G.edges():
+        G[u][v]['weight'] = random.randint(0, 1_000_000)
+
+    # Convert to an adjacency matrix with weights
+    adj_matrix = nx.to_numpy_array(G, weight='weight')
+
+    return adj_matrix
+
 def generate_test_cases_undirected(size, density, num_matrices):
 
     all_matrices = np.zeros((num_matrices, size, size)) #Prepare a matrix of zeros to store our adjacency matrices
@@ -34,6 +57,17 @@ def generate_test_cases_undirected(size, density, num_matrices):
     path = f"test_cases\\graph_test_cases\\undirected\\size_{size}_density_{density}.npy"
     np.save(path, all_matrices)
 
+def generate_test_cases_directed(size, density, num_matrices):
+
+    all_matrices = np.zeros((num_matrices, size, size)) #Prepare a matrix of zeros to store our adjacency matrices
+
+    for i in range(num_matrices):
+        adj_matrix = generate_directed_graph(size, density)
+        all_matrices[i] = adj_matrix
+
+    path = f"test_cases\\graph_test_cases\\directed\\size_{size}_density_{density}.npy"
+    np.save(path, all_matrices)
+
 if __name__ == '__main__':
 
     graph_sizes = [10, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
@@ -43,4 +77,4 @@ if __name__ == '__main__':
     for size in graph_sizes:
         for density in densities:
             print(f"Generating Test Cases of Size :{size}, Density: {density} ")
-            generate_test_cases_undirected(size, density, iterations)
+            generate_test_cases_directed(size, density, iterations)
