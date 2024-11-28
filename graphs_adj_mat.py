@@ -9,55 +9,38 @@ from doubly_linked_list import Doubly_Linked_List
 
 random.seed(2024)
 
-#Just allows us to convert to a collection of nodes and edges without the matrix
-#This is pretty much just for kruskals
-def convert_matrix(matrix):
-    nodes = []
-    edges = []
-    dist = {}
-
-    for i in range(len(matrix)):
-        nodes.append(i)
-        for j in range(i + 1, len(matrix)):
-            if matrix[i][j] != 0:
-                edges.append((i, j))
-                dist[(i, j)] = matrix[i][j]
-
-    return nodes, edges, dist
-
-def Naive_Dijkstras(network, nodes, source, destination):
+def Naive_Dijkstras(adj_list, nodes, source, destination):
     num_nodes = len(nodes)
-    S = set() #Permanent Nodes
-    S_c = set(nodes) #Temporary Nodes
-    distance = dict() #Distances to each node
-    predecessors = dict() #The predecessor for each node in our path
+    S = set()  # Permanent Nodes
+    S_c = set(nodes)  # Temporary Nodes
+    distance = dict()  # Distances to each node
+    predecessors = dict()  # The predecessor for each node in our path
 
-    #Initializing our distance and predecessor labels
+    # Initialize distance and predecessor labels
     for n in nodes: 
-        distance[n] = 999_999_999
-        predecessors[n] = 0
+        distance[n] = float('inf')  # Use infinity for initialization
+        predecessors[n] = None
 
-    distance[source] = 0 #Source is where we are starting, i.e cost = 0. Also guarantees that we look at this node first
-    predecessors[source] = 0
+    distance[source] = 0  # Start from the source node
 
-    #lets calculate some distances, this is the main loop of Dijkstras
+    # Main loop of Dijkstra's
     while len(S) < num_nodes:
-        current_node = min(S_c, key=distance.get) #This grabs the node with the smallest distance
+        current_node = min(S_c, key=distance.get)  # Node with the smallest distance
         S.add(current_node)
         S_c.discard(current_node)
 
-        for adjacent_node in network[current_node]:
-            if distance[adjacent_node] > distance[current_node] + network[current_node][adjacent_node]:
-                distance[adjacent_node] = distance[current_node] + network[current_node][adjacent_node]
+        # Update distances for all adjacent nodes
+        for adjacent_node, weight in adj_list[current_node]:  # Unpack the adjacency list
+            if distance[adjacent_node] > distance[current_node] + weight:
+                distance[adjacent_node] = distance[current_node] + weight
                 predecessors[adjacent_node] = current_node
 
-    #This just reconstructs the path into a neater form
-
+    # Reconstruct the path
     path = deque()
     current_node = destination
     path.append(current_node)
     while current_node != source:
-        current_node = predecessors.pop(current_node)
+        current_node = predecessors[current_node]
         path.appendleft(current_node)
 
     return path, distance[destination]
@@ -267,7 +250,26 @@ def Quick_Sort(array, dist):
     larger = [i for i in array if dist[i] > dist[pivot]]
     return Quick_Sort(smaller, dist) + equal + Quick_Sort(larger, dist)
 
+def convert_matrix(matrix, create_adj_list=False):
+    nodes = []
+    edges = []
+    dist = {}
+    adj_list = {} if create_adj_list else None
 
+    for i in range(len(matrix)):
+        nodes.append(i)
+        if create_adj_list:
+            adj_list[i] = []
+        for j in range(len(matrix)):  # Check all rows and columns (not just upper triangle)
+            if matrix[i][j] != 0:  # Non-zero weight indicates an edge
+                edges.append((i, j))
+                dist[(i, j)] = matrix[i][j]
+                if create_adj_list:
+                    adj_list[i].append((j, matrix[i][j]))  # Directed edge from i to j
+
+    if create_adj_list:
+        return nodes, edges, dist, adj_list
+    return nodes, edges, dist
 
 
 #**************************************************************************
@@ -284,14 +286,17 @@ adj_matrix = np.array([
 
 if __name__ == "__main__":
 
-    data = np.load("test_cases\\graph_test_cases\\undirected\\size_100_density_0.25.npy")
+    # data = np.load("test_cases\\graph_test_cases\\undirected\\size_100_density_0.25.npy")
 
-    for adj_matrix in data:
+    # for adj_matrix in data:
 
-        nodes, edges, dist = convert_matrix(adj_matrix)
+    #     nodes, edges, dist = convert_matrix(adj_matrix)
 
-        print(Naive_Kruskals(nodes, edges, dist))
-        print(Improved_Kruskals(nodes, edges, dist))
-        print(Naive_Prims(adj_matrix, nodes, 2))
-        print(Heap_Prims(adj_matrix, nodes, 2))
+    #     print(Naive_Kruskals(nodes, edges, dist))
+    #     print(Improved_Kruskals(nodes, edges, dist))
+    #     print(Naive_Prims(adj_matrix, nodes, 2))
+    #     print(Heap_Prims(adj_matrix, nodes, 2))
+
+    nodes, edges, dist, list = convert_matrix(adj_matrix, True)
+    print(Naive_Dijkstras(list, nodes, 0, random.randint(0, len(adj_matrix))))
 
