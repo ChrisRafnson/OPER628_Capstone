@@ -26,12 +26,11 @@ def calculate_runtime_mean(df, density):
     return df.groupby('Input Size')[f'{density}'].mean()
 
 def calculate_memory_mean(df, density):
-    df[f'{density}'] = df[f'{density}'] / (1024 **2)
+    df[f'{density}'] = df[f'{density}'] / (1024 ** 2)
     return df.groupby('Input Size')[f'{density}'].mean()
 
 def generate_single_plot_runtime_all_densities(algorithm, df_runtime):
 
-    # plt.figure()
     plt.plot(calculate_runtime_mean(df_runtime, 0.25), label="Density 0.25", linestyle = '-', color = 'k')
     plt.plot(calculate_runtime_mean(df_runtime, 0.5), label="Density 0.50", linestyle = '--', color = 'b')
     plt.plot(calculate_runtime_mean(df_runtime, 0.75), label="Density 0.75", linestyle = ':', color = 'r')
@@ -45,83 +44,122 @@ def generate_single_plot_runtime_all_densities(algorithm, df_runtime):
     plt.show()
     plt.savefig(f"plots\graph_algorithms\{algorithm}\{algorithm}_single_plot_runtime")
 
-def generate_times_vs_theoretical(sort, df):
-    df = calculate_runtime_mean(df)
-    df = df.reset_index()
-    theoretical_df = pd.DataFrame()
+def generate_single_plot_memory_all_densities(algorithm, df_memory):
 
-    theoretical_df['List Size'] = [i for i in range(0, df["List Size"].iloc[-1] + 5, 5)]
+    plt.plot(calculate_memory_mean(df_memory, 0.25), label="Density 0.25", linestyle = '-', color = 'k')
+    plt.plot(calculate_memory_mean(df_memory, 0.5), label="Density 0.50", linestyle = '--', color = 'b')
+    plt.plot(calculate_memory_mean(df_memory, 0.75), label="Density 0.75", linestyle = ':', color = 'r')
+    plt.plot(calculate_memory_mean(df_memory, 1.0), label="Density 1.0", linestyle = '-.', color = 'y')
 
-    
-    # Compute theoretical times and add as a new column
-    linearithmic_normalizer = df["Time Taken (s)"].iloc[(len(df)//2)] / (df["List Size"].iloc[(len(df)//2)] * np.log2(df["List Size"].iloc[(len(df)//2)]))
-    theoretical_df["Linearithmic Time (s)"] = linearithmic_normalizer * theoretical_df['List Size'] * np.log2(theoretical_df['List Size'])
-
-    # Compute theoretical times and add as a new column
-    linear_normalizer = df["Time Taken (s)"].iloc[(len(df)//2)] / (df["List Size"].iloc[(len(df)//2)])
-    theoretical_df["Linear Time (s)"] = linear_normalizer * theoretical_df['List Size']
-
-    average_case_normalizer = df["Time Taken (s)"].iloc[(len(df) // 2)] / (2 * df["List Size"].iloc[(len(df) // 2)])
-    theoretical_df["Average Case Time (s)"] = average_case_normalizer * (2 * theoretical_df["List Size"])
-
-    # Compute theoretical times and add as a new column
-    poloynomial_normalizer = df["Time Taken (s)"].iloc[(len(df)//2)] / (df["List Size"].iloc[(len(df)//2)] ** 2)
-    theoretical_df["Polynomial Time (s)"] = poloynomial_normalizer * (theoretical_df["List Size"] ** 2)
-
-    # Plot using pandas
-
-    plt.figure()
-    plt.plot(df["List Size"], df["Time Taken (s)"], 'o--', label="Measured Times", color = 'k')
-    plt.plot(theoretical_df["List Size"], theoretical_df["Linearithmic Time (s)"], '-', label=r"Theoretical $O(n \log n)$", color = 'b')
-    plt.plot(theoretical_df["List Size"], theoretical_df["Linear Time (s)"], '-', label=r"Theoretical $O(n)$", color = 'y')
-    plt.plot(theoretical_df["List Size"], theoretical_df["Polynomial Time (s)"], '-', label=r"Theoretical $O(n^2)$", color = 'r')
-
-        
-    if sort == 'heap_sort':
-        plt.title("Heap Sort Performance: Measured vs Theoretical")
-    elif sort == 'bucket_sort':
-        plt.title("Bucket Sort Performance: Measured vs Theoretical")
-    elif sort == 'quick_sort':
-        plt.title("Quick Sort Performance: Measured vs Theoretical")
-    elif sort == 'merge_sort':
-        plt.title("Merge Sort Performance: Measured vs Theoretical")
-    else:
-        plt.title("Selection Sort Performance: Measured vs Theoretical")
-
-
-    plt.xlabel("List Size")
-    plt.ylabel("Time (seconds)")
-    plt.ylim(0, df["Time Taken (s)"].iloc[-1] * 1.25)
+    plt.title(f"Search Performance ({algorithm})")
+    plt.xlabel('Graph Size (Nodes)')
+    plt.ylabel('Peak Memory Used (Megabytes)')
     plt.legend()
     plt.grid(True)
     plt.show()
-    # plt.savefig(f"plots\sort_algorithms\{sort}\{sort}_theoretical_runtime")
+    plt.savefig(f"plots\graph_algorithms\{algorithm}\{algorithm}_single_plot_runtime")
 
-def generate_single_plot_memory(sort, df_random, df_almost, df_reverse, df_uniform):
+def generate_times_vs_theoretical(algorithm, df, density):
 
-    plt.figure()
-    plt.plot(calculate_memory_mean(df_random), label="Random Inputs", linestyle = '-', color = 'k')
-    plt.plot(calculate_memory_mean(df_almost), label="Almost Sorted", linestyle = '--', color = 'r')
-    plt.plot(calculate_memory_mean(df_reverse), label="Almost Reverse Sorted", linestyle = ':', color = 'b')
-    plt.plot(calculate_memory_mean(df_uniform), label="Uniform Array", linestyle = '-.', color = 'y')
+    #Initialize essential variables
+    df = calculate_runtime_mean(df, density)
+    df = df.reset_index()
+    theoretical_df = pd.DataFrame()
 
-    if sort == 'heap_sort':
-        plt.title(f'Heap Sort Performance')
-    elif sort == 'bucket_sort':
-        plt.title(f'Bucket Sort Performance')
-    elif sort == 'quick_sort':
-        plt.title(f'Quick Sort Performance')
-    elif sort == 'merge_sort':
-        plt.title(f'Merge Sort Performance')
+    theoretical_df['Input Size'] = [i for i in range(0, df["Input Size"].iloc[-1] + 5, 5)]
+
+
+    #This is where we calculate the values for our theoretical curves
+    time = df[f"{density}"].iloc[(len(df)//2)]
+    n = df["Input Size"].iloc[(len(df)//2)]
+    m = (df["Input Size"].iloc[(len(df)//2)] ** 2) * density
+
+    n_theoretical = theoretical_df["Input Size"]
+    m_theoretical = (theoretical_df["Input Size"] ** 2) * density
+
+    # Calculates O((n+m) log n) for heap Dijkstras
+    n_plus_m_log_n = time / ((n + m) * np.log2(n))
+    theoretical_df["O((n+m) log n)"] = n_plus_m_log_n * ((n_theoretical + m_theoretical) * np.log2(n_theoretical))
+
+    # Calculates O(mn) for naive kruskals and prims
+    n_plus_m_log_n = time / (n * m)
+    theoretical_df["O(mn)"] = n_plus_m_log_n * (n_theoretical * m_theoretical)
+
+    # Calculates O(m log n) for improved prims
+    m_log_n = time / (m * np.log2(n))
+    theoretical_df["O(m log n)"] = m_log_n * (m_theoretical * np.log2(n_theoretical))
+
+    # Calculates O(m + n log n) for improved kruskals
+    m_log_n = time / (m + (n * np.log2(n)))
+    theoretical_df["O(m + n log n)"] = m_log_n * (m_theoretical + (n * np.log2(n_theoretical)))
+
+    #n log n theoretical time
+    linearithmic = time / (n * np.log2(n))
+    theoretical_df["Linearithmic"] = linearithmic * (n_theoretical * np.log2(n_theoretical))
+
+    # N
+    linear = time / n
+    theoretical_df["Linear"] = linear * n_theoretical
+
+    # N^2
+    squared = time / (n ** 2)
+    theoretical_df["Squared"] = squared * (n_theoretical ** 2)
+
+    # N^3
+    cubed = time / (n ** 3)
+    theoretical_df["Cubed"] = cubed * (n_theoretical ** 3)
+
+    # N^4
+    cubed = time / (n ** 4)
+    theoretical_df["Quartic"] = cubed * (n_theoretical ** 4)
+  
+    #Plot different things based on algorithm
+
+    if algorithm == 'naive_dijkstras':
+        plt.plot(theoretical_df["Input Size"], theoretical_df["Linearithmic"], '-', label=r"Theoretical $O(n \log n)$", color = 'b')
+        plt.plot(theoretical_df["Input Size"], theoretical_df["Squared"], '-', label=r"Theoretical $O(n^2)$", color = 'r')
+        plt.plot(theoretical_df["Input Size"], theoretical_df["Cubed"], '-', label=r"Theoretical $O(n^3)$", color = 'y')
+
+    elif algorithm == 'heap_dijkstras':
+        plt.plot(theoretical_df["Input Size"], theoretical_df["O(m log n)"], '-', label=r"Theoretical $O(m log n)$", color = 'b')
+        plt.plot(theoretical_df["Input Size"], theoretical_df["Squared"], '-', label=r"Theoretical $O(n^2)$", color = 'r')
+        plt.plot(theoretical_df["Input Size"], theoretical_df["Cubed"], '-', label=r"Theoretical $O(n^3)$", color = 'y')
+
+    elif algorithm == 'naive_kruskals':
+        plt.plot(theoretical_df["Input Size"], theoretical_df["O(mn)"], '-', label=r"Theoretical $O(mn)$", color = 'b')
+        plt.plot(theoretical_df["Input Size"], theoretical_df["Squared"], '-', label=r"Theoretical $O(n^2)$", color = 'r')
+        plt.plot(theoretical_df["Input Size"], theoretical_df["Cubed"], '-', label=r"Theoretical $O(n^3)$", color = 'y')
+    
+    elif algorithm == 'improved_kruskals':
+        plt.plot(theoretical_df["Input Size"], theoretical_df["O(m + n log n)"], '-', label=r"Theoretical $O(m + n log n)$", color = 'b')
+        plt.plot(theoretical_df["Input Size"], theoretical_df["Squared"], '-', label=r"Theoretical $O(n^2)$", color = 'r')
+        plt.plot(theoretical_df["Input Size"], theoretical_df["Cubed"], '-', label=r"Theoretical $O(n^3)$", color = 'y')
+    
+    elif algorithm == 'naive_prims':
+        plt.plot(theoretical_df["Input Size"], theoretical_df["O(mn)"], '-', label=r"Theoretical $O(mn)$", color = 'b')
+        plt.plot(theoretical_df["Input Size"], theoretical_df["Squared"], '-', label=r"Theoretical $O(n^2)$", color = 'r')
+        plt.plot(theoretical_df["Input Size"], theoretical_df["Cubed"], '-', label=r"Theoretical $O(n^3)$", color = 'y')
+    
     else:
-        plt.title(f'Selection Sort Performance')
+        plt.plot(theoretical_df["Input Size"], theoretical_df["O(m log n)"], '-', label=r"Theoretical $O(m log n)$", color = 'b')
+        plt.plot(theoretical_df["Input Size"], theoretical_df["Squared"], '-', label=r"Theoretical $O(n^2)$", color = 'r')
+        plt.plot(theoretical_df["Input Size"], theoretical_df["Cubed"], '-', label=r"Theoretical $O(n^3)$", color = 'y')
 
-    plt.xlabel('Input Size (n)')
-    plt.ylabel('Peak Memory Usage (Megabytes)')
+
+    plt.title(f"Search Performance ({algorithm})")
+    plt.plot(df["Input Size"], df[f"{density}"], 'o--', label="Measured Times", color = 'k')
+    plt.xlabel("Input Size (nodes)")
+    plt.ylabel("Time To Complete (seconds)")
+    plt.ylim(0, df[f"{density}"].iloc[-1] * 1.25)
     plt.legend()
     plt.grid(True)
-    # plt.show()
-    plt.savefig(f"plots\sort_algorithms\{sort}\{sort}_single_plot_memory")
+
+    # plt.plot(theoretical_df["Input Size"], theoretical_df["Linearithmic"], '-', label=r"Theoretical $O(n \log n)$", color = 'b')
+    # plt.plot(theoretical_df["Input Size"], theoretical_df["Heap Dijkstras Worst Case"], '-', label=r"Theoretical $O(n^2 + m)$", color = 'y')
+    # plt.plot(theoretical_df["Input Size"], theoretical_df["Squared"], '-', label=r"Theoretical $O(n^2)$", color = 'r')
+
+    plt.show()
+    # plt.savefig(f"plots\sort_algorithms\{sort}\{sort}_theoretical_runtime")
 
 def generate_sort_comparison(sorts, data_type):
     
@@ -168,9 +206,16 @@ def generate_sort_comparison(sorts, data_type):
 
 if __name__ == '__main__':
 
-    for algorithm in algorithms:
-        df_runtime, df_memory = read_graph_data(algorithm)
+    # for algorithm in algorithms:
+    #     df_runtime, df_memory = read_graph_data(algorithm)
 
-        generate_single_plot_runtime_all_densities(algorithm, df_runtime)
+    #     # generate_single_plot_runtime_all_densities(algorithm, df_runtime)
+    #     generate_single_plot_memory_all_densities(algorithm, df_runtime)
+
+
+    algorithm = "heap_prims"
+    df_runtime, df_memory = read_graph_data(algorithm)
+
+    generate_times_vs_theoretical(algorithm, df_runtime, 1.0)
 
     print("Done")
