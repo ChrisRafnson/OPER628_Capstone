@@ -3,18 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-algorithms = [
-    "naive_dijkstras",
-    "heap_dijkstras",
-    "naive_kruskals",
-    "improved_kruskals",
-    "naive_prims",
-    "heap_prims"
-]
-densities = [0.25, 0.5, 0.75, 1.0]
-
-
-
 def read_graph_data(algorithm):
 
     df_runtime = pd.read_csv(f"graph_data\{algorithm}_runtime.csv")
@@ -30,6 +18,8 @@ def calculate_memory_mean(df, density):
     return df.groupby('Input Size')[f'{density}'].mean()
 
 def generate_single_plot_runtime_all_densities(algorithm, df_runtime):
+    plt.figure()
+
 
     plt.plot(calculate_runtime_mean(df_runtime, 0.25), label="Density 0.25", linestyle = '-', color = 'k')
     plt.plot(calculate_runtime_mean(df_runtime, 0.5), label="Density 0.50", linestyle = '--', color = 'b')
@@ -41,10 +31,12 @@ def generate_single_plot_runtime_all_densities(algorithm, df_runtime):
     plt.ylabel('Time to Finish (s)')
     plt.legend()
     plt.grid(True)
-    plt.show()
+    # plt.show()
     plt.savefig(f"plots\graph_algorithms\{algorithm}\{algorithm}_single_plot_runtime")
 
 def generate_single_plot_memory_all_densities(algorithm, df_memory):
+    plt.figure()
+
 
     plt.plot(calculate_memory_mean(df_memory, 0.25), label="Density 0.25", linestyle = '-', color = 'k')
     plt.plot(calculate_memory_mean(df_memory, 0.5), label="Density 0.50", linestyle = '--', color = 'b')
@@ -56,10 +48,12 @@ def generate_single_plot_memory_all_densities(algorithm, df_memory):
     plt.ylabel('Peak Memory Used (Megabytes)')
     plt.legend()
     plt.grid(True)
-    plt.show()
-    plt.savefig(f"plots\graph_algorithms\{algorithm}\{algorithm}_single_plot_runtime")
+    # plt.show()
+    plt.savefig(f"plots\graph_algorithms\{algorithm}\{algorithm}_single_plot_memory_usage")
 
 def generate_times_vs_theoretical(algorithm, df, density):
+    plt.figure()
+
 
     #Initialize essential variables
     df = calculate_runtime_mean(df, density)
@@ -154,68 +148,98 @@ def generate_times_vs_theoretical(algorithm, df, density):
     plt.legend()
     plt.grid(True)
 
-    # plt.plot(theoretical_df["Input Size"], theoretical_df["Linearithmic"], '-', label=r"Theoretical $O(n \log n)$", color = 'b')
-    # plt.plot(theoretical_df["Input Size"], theoretical_df["Heap Dijkstras Worst Case"], '-', label=r"Theoretical $O(n^2 + m)$", color = 'y')
-    # plt.plot(theoretical_df["Input Size"], theoretical_df["Squared"], '-', label=r"Theoretical $O(n^2)$", color = 'r')
+    # plt.show()
+    plt.savefig(f"plots\graph_algorithms\{algorithm}\{algorithm}_theoretical_runtime")   
 
-    plt.show()
-    # plt.savefig(f"plots\sort_algorithms\{sort}\{sort}_theoretical_runtime")
+def generate_graph_comparison(algorithms, density, alg_type):
 
-def generate_sort_comparison(sorts, data_type):
-    
-    line_styles = [('o', '-', 'k'), ('o', '-', 'b'), ('o', '-', 'r'), ('o', '-', 'y'), ('o', '-', 'c')]
+    line_styles = [('o', '-', 'k'), ('o', '-', 'b'), ('o', '-', 'r'), ('o', '-', 'y'), ('o', '-', 'c'), ('o', '-', 'm')]
 
     plt.figure()
     max_y_val = 0
-    for sort, line_style in zip(sorts, line_styles):
 
-        if sort == 'heap_sort':
-            legend = "Heap Sort"
-        elif sort == 'bucket_sort':
-            legend = "Bucket Sort"
-        elif sort == 'quick_sort':
-            legend = "Quick Sort"
-        elif sort == 'merge_sort':
-            legend = "Merge Sort"
+    for algorithm, line_style in zip(algorithms, line_styles):
+
+        # Read the runtime data for the algorithm
+        df_runtime, _ = read_graph_data(algorithm)
+        grouped = calculate_runtime_mean(df_runtime, density)
+
+        # Update max_y_val to dynamically set the y-axis limit
+        max_y_val = max(max_y_val, grouped.max())
+
+        # Algorithm-specific legend
+        if algorithm == "naive_dijkstras":
+            legend = "Naive Dijkstra's"
+        elif algorithm == "heap_dijkstras":
+            legend = "Heap Dijkstra's"
+        elif algorithm == "naive_kruskals":
+            legend = "Naive Kruskal's"
+        elif algorithm == "improved_kruskals":
+            legend = "Improved Kruskal's"
+        elif algorithm == "naive_prims":
+            legend = "Naive Prim's"
         else:
-            legend = "Selection Sort"
+            legend = "Heap Prim's"
 
-        df = pd.read_csv(f"sort_data\{sort}_generate_{data_type}_list.csv")
-        grouped = df.groupby('List Size')['Time Taken (s)'].mean()
+        # Plot the runtime data for the algorithm
+        plt.plot(grouped, label=legend, marker=line_style[0], linestyle=line_style[1], color=line_style[2])
 
-        # if grouped.iloc[-1] > max_y_val:
-        #     max_y_val = grouped.iloc[-1]
-
-        if sort == 'merge_sort':
-            max_y_val = grouped.iloc[-1]
-
-        plt.plot(grouped, label=legend, marker = line_style[0], linestyle = line_style[1], color = line_style[2])
-
-    plt.xlabel('Input Size (n)')
-    plt.ylabel('Time to Finish Sort (s)')
-    plt.title(f"Comparison of Sorting Algorithms ({data_type})")
-    plt.ylim(0, max_y_val)
+    # Configure plot appearance
+    plt.xlabel('Graph Size (Nodes)')
+    plt.ylabel('Time to Finish (s)')
+    plt.title(f"Comparison of Graph Algorithms (Density {density})")
+    plt.ylim(0, max_y_val * 1.1)
     plt.legend()
     plt.grid(True)
-    # plt.show()
 
-    plt.savefig(f"plots\sort_algorithms\comparison_{data_type}")
+    # Save the plot
+    plt.savefig(f"plots/graph_algorithms/runtime_comparisons/comparison_{alg_type}_density_{density}_.png")
+    plt.show()
 
+algorithms = [
+    "naive_dijkstras",
+    "heap_dijkstras",
+    "naive_kruskals",
+    "improved_kruskals",
+    "naive_prims",
+    "heap_prims"
+]
 
+shortest_path_algorithms = [
+    "naive_dijkstras",
+    "heap_dijkstras"
+]
 
+mcst_algorithms = [
+    "naive_kruskals",
+    "improved_kruskals",
+    "naive_prims",
+    "heap_prims"
+]
+
+prims_algorithms = [
+    "naive_prims",
+    "heap_prims"
+]
+
+kruskals_algorithms = [
+    "naive_kruskals",
+    "improved_kruskals"
+]
+densities = [0.25, 0.5, 0.75, 1.0]
 
 if __name__ == '__main__':
 
-    # for algorithm in algorithms:
-    #     df_runtime, df_memory = read_graph_data(algorithm)
+    for algorithm in algorithms:
+        df_runtime, df_memory = read_graph_data(algorithm)
 
-    #     # generate_single_plot_runtime_all_densities(algorithm, df_runtime)
-    #     generate_single_plot_memory_all_densities(algorithm, df_runtime)
+        generate_single_plot_runtime_all_densities(algorithm, df_runtime)
+        # generate_times_vs_theoretical(algorithm, df_runtime, 1.0)
+        generate_single_plot_memory_all_densities(algorithm, df_memory)
 
 
-    algorithm = "heap_prims"
-    df_runtime, df_memory = read_graph_data(algorithm)
+    
 
-    generate_times_vs_theoretical(algorithm, df_runtime, 1.0)
+
 
     print("Done")
