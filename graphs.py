@@ -1,5 +1,5 @@
 from collections import deque
-import networkx as nx
+from heapdict import heapdict
 import matplotlib.pyplot as plt
 import random
 import timeit
@@ -158,47 +158,6 @@ def Improved_Kruskals(nodes, edges, dist):
 
     return mst, total_cost
 
-# def Heap_Prims(network, nodes, source):
-#     # Initialize the MST path and total cost
-#     mst_path = set()
-#     total_cost = 0
-
-#     # Set to track nodes already in the MST
-#     in_mst = set()
-#     in_mst.add(source)
-
-#     # Min-Heap to keep track of edges (weight, from_node, to_node)
-#     heap = BinaryHeap()
-
-#     # Add all edges from the start node to the heap
-#     for adjacent, weight in network[source].items():
-#         heap.Insert_Key(weight, (source, adjacent))
-
-#     # Main loop to construct the MST
-#     while len(in_mst) < len(nodes):
-
-#         # Extract the edge with the minimum weight
-#         (from_node, to_node), min_weight  = heap.Find_Min_Node()
-
-#         # If the to_node is already in the MST, skip it
-#         if to_node in in_mst:
-#             continue
-        
-#         else:
-#             # Otherwise, add this edge to the MST
-#             in_mst.add(to_node)
-#             total_cost = total_cost + min_weight
-#             mst_path.add((from_node, to_node))
-
-#             # Add all new edges from the newly added node to the heap
-#             for adjacent, weight in network[to_node].items():
-#                 if adjacent not in in_mst:
-#                     heap.Insert_Key(weight, (to_node, adjacent))
-
-        
-
-#     return mst_path, total_cost
-
 def Heap_Prims(network, nodes, source):
     # Initialize the MST path and total cost
     mst_path = set()
@@ -288,6 +247,7 @@ def Quick_Sort(array, dist):
     equal = [i for i in array if dist[i] == dist[pivot]]
     larger = [i for i in array if dist[i] > dist[pivot]]
     return Quick_Sort(smaller, dist) + equal + Quick_Sort(larger, dist)
+
 
 #**************************************************************************
 class Node:
@@ -931,6 +891,12 @@ distance_4 = {(1,2):6, (1,3):4, (2,3):2, (2, 4):2, (3, 4):1, (3, 5):2, (4, 6):7,
 
 
 if __name__ == "__main__":
+
+    
+    undirected_weighted = create_undirected_weighted_network(edges, distance)
+    print(Heap_Prims(undirected_weighted, nodes, 1))
+    print(prims_heapdict(undirected_weighted, nodes, 1))
+
 
 
     # num_nodes = 1000

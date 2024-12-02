@@ -17,10 +17,10 @@ from graphs import (
 algorithms = [
     # Naive_Dijkstras,
     # Heap_Dijkstras,
-    Naive_Kruskals,
+    # Naive_Kruskals,
     Improved_Kruskals,
-    Naive_Prims,
-    Heap_Prims
+    # Naive_Prims,
+    # Heap_Prims
 ]
 
 def measure_time_and_memory(func, *args):
@@ -66,8 +66,8 @@ def generate_data_for_algorithm(algorithm, filename_prefix, input_sizes, densiti
             runtime_data.append(runtime_row)
             memory_data.append(memory_row)
 
-    save_results_to_csv(f"{filename_prefix}_runtime.csv", runtime_data)
-    save_results_to_csv(f"{filename_prefix}_memory.csv", memory_data)
+    save_results_to_csv(f"{filename_prefix}_runtime_alternate.csv", runtime_data)
+    save_results_to_csv(f"{filename_prefix}_memory_alternate.csv", memory_data)
 
 if __name__ == "__main__":
     # User-specified parameters
@@ -81,5 +81,5 @@ if __name__ == "__main__":
 
 
     for algorithm in algorithms:
-        filename_prefix = f"data/{algorithm.__name__.lower()}"
+        filename_prefix = f"graph_data/{algorithm.__name__.lower()}"
         generate_data_for_algorithm(algorithm, filename_prefix, input_sizes, densities, seed)
